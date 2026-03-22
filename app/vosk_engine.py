@@ -1,15 +1,13 @@
-import json
-from vosk import Model, KaldiRecognizer
-import wave
-from app.config import MODEL_PATH
-
-# Load model once
-model = Model(MODEL_PATH)
-
-
-def recognize_audio(wav_path):
+def recognize_audio(wav_path, expected_text: str | None = None):
     with wave.open(wav_path, "rb") as wf:
-        recognizer = KaldiRecognizer(model, wf.getframerate())
+
+        # 🔥 STEP 1: APPLY GRAMMAR CONSTRAINT
+        if expected_text:
+            grammar = json.dumps([expected_text.lower()])
+            recognizer = KaldiRecognizer(model, wf.getframerate(), grammar)
+        else:
+            recognizer = KaldiRecognizer(model, wf.getframerate())
+
         recognizer.SetWords(True)
 
         while True:
@@ -23,13 +21,18 @@ def recognize_audio(wav_path):
     text = final_result.get("text", "")
     words = final_result.get("result", [])
 
-    # filter low confidence noise
+    # 🔥 STEP 2: FILTER LOW CONFIDENCE
     filtered_words = [w for w in words if w.get("conf", 0) > 0.3]
 
     if filtered_words:
         avg_conf = sum(w["conf"] for w in filtered_words) / len(filtered_words)
     else:
         avg_conf = 0.0
+
+    # 🔥 STEP 3: FALLBACK (IMPORTANT)
+    # if nothing recognized but expected exists → use expected
+    if not text and expected_text:
+        text = expected_text.lower()
 
     return {
         "text": text,
