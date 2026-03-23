@@ -1,3 +1,10 @@
+from vosk import Model, KaldiRecognizer
+import wave
+import json
+from app.config import MODEL_PATH
+
+model = Model(MODEL_PATH)
+
 def recognize_audio(wav_path, expected_text: str | None = None):
     with wave.open(wav_path, "rb") as wf:
 

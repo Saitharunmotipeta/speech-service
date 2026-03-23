@@ -30,6 +30,7 @@ async def recognize(file: UploadFile = File(...)):
         }
 
     except Exception as e:
+        print("ERROR:", str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
     finally:
