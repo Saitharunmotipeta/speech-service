@@ -1,8 +1,17 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from app.audio_utils import save_temp_file, convert_to_wav, cleanup_files
 from app.vosk_engine import recognize_audio
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for dev (later restrict)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/recognize")
